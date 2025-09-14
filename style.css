@@ -1,0 +1,36 @@
+/* 基础重置 */
+* { margin:0; padding:0; box-sizing:border-box; }
+body, html { width:100%; height:100%; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#667eea,#764ba2); display:flex; justify-content:center; align-items:center; overflow:hidden; }
+
+.app { position: relative; width: 100%; max-width: 400px; padding: 20px; }
+
+.page { display:flex; justify-content:center; align-items:center; height:100%; width:100%; transition: all 0.5s ease; }
+.hidden { display:none; }
+
+.login-card, .home-card {
+  background:#fff; border-radius:25px; padding:1.5rem; box-shadow:0 10px 25px rgba(0,0,0,0.2); animation: slideUp 0.5s ease-out; width:100%;
+}
+
+.login-card h1, .home-card h1 { text-align:center; font-size:1.8rem; margin-bottom:0.5rem; }
+.login-card p, .home-card p { text-align:center; margin-bottom:1rem; color:#555; }
+
+button {
+  padding:0.8rem 1.5rem; font-size:1.1rem; border:none; border-radius:15px; background-color:#667eea; color:#fff; cursor:pointer; transition: all 0.3s ease;
+}
+button:hover { background-color:#5a67d8; transform: translateY(-2px); }
+
+.total-assets { font-size:1.3rem; font-weight:bold; margin:1rem 0; text-align:center; }
+
+.token-list { display:flex; flex-direction:column; gap:0.8rem; }
+
+.token-item { background:#f7f7f7; border-radius:15px; padding:0.8rem 1rem; cursor:pointer; transition: all 0.3s ease; }
+.token-item:hover { background:#e3e3e3; transform: translateY(-2px); }
+.token-header { display:flex; justify-content:space-between; font-weight:600; }
+.token-value { font-size:0.9rem; color:#555; margin-top:0.3rem; }
+
+.wave { position:absolute; bottom:0; width:200%; height:200px; background: rgba(255,255,255,0.1); border-radius:50%; animation: waveMove 6s linear infinite; z-index:0; left:-50%; }
+
+@keyframes waveMove { 0%{transform:translateX(0);} 50%{transform:translateX(25%);} 100%{transform:translateX(0);} }
+@keyframes slideUp { from{transform:translateY(50px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+
+@media(max-width:500px){ .login-card, .home-card{padding:1.2rem;} button{width:100%;} }
