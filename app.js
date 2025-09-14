@@ -1,119 +1,140 @@
-const connectWalletBtn = document.getElementById('connectWalletBtn');
-const userAddressEl = document.getElementById('userAddress');
-const homeAddressEl = document.getElementById('homeAddress');
-const bnbBalanceEl = document.getElementById('bnbBalance');
-const usdtBalanceEl = document.getElementById('usdtBalance');
-const crcBalanceEl = document.getElementById('crcBalance');
-const rongBalanceEl = document.getElementById('rongBalance');
-const bnbValueEl = document.getElementById('bnbValue');
-const usdtValueEl = document.getElementById('usdtValue');
-const crcValueEl = document.getElementById('crcValue');
-const rongValueEl = document.getElementById('rongValue');
-const totalValueEl = document.getElementById('totalValue');
-const loginPage = document.getElementById('loginPage');
-const homePage = document.getElementById('homePage');
-const logoutBtn = document.getElementById('logoutBtn');
+// app.js
+// 依赖: ethers.js (在 index.html 通过 CDN 引入)
+const providerFallback = new ethers.providers.InfuraProvider('homestead', {
+  // 无需填写 key 即可使用公共节点（速率受限）。如需稳定服务请换成自己的 Infura/Alchemy key。
+});
 
-let provider;
-let userAccount;
+const btnConnect = document.getElementById('btnConnect');
+const btnDisconnect = document.getElementById('btnDisconnect');
+const accountPanel = document.getElementById('accountPanel');
+const accountAddr = document.getElementById('accountAddr');
+const accountBal = document.getElementById('accountBal');
+const toast = document.getElementById('toast');
+const networkLabel = document.getElementById('network');
 
-// BSC 代币
-const TOKEN_LIST = [
-  { symbol: 'USDT', address: '0x55d398326f99059fF775485246999027B3197955', decimals: 18 },
-  { symbol: 'CRC', address: '0x5b2fe2b06e714b7bea4fd35b428077d850c48087', decimals: 18 },
-  { symbol: 'RongChain', address: '0x0337a015467af6605c4262d9f02a3dcd8b576f7e', decimals: 18 }
-];
+let signer = null;
+let ethersProvider = null;
+let currentAccount = null;
 
-// ERC20 ABI
-const ERC20_ABI = ["function balanceOf(address owner) view returns (uint256)", "function decimals() view returns (uint8)"];
-
-// 价格
-let tokenPrices = { BNB:0, USDT:1, CRC:0.05, RongChain:0.1 };
-
-// 连接钱包
-async function connectWallet(){
-  if(!window.ethereum){alert('请安装 MetaMask'); return;}
-  try{
-    const accounts = await ethereum.request({method:'eth_requestAccounts'});
-    userAccount = accounts[0];
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    const network = await provider.getNetwork();
-    if(network.chainId !== 56 && network.chainId !== 97){alert('请切换到 BSC 主网或测试网'); return;}
-    userAddressEl.textContent = `已连接钱包: ${userAccount}`;
-    connectWalletBtn.textContent = '钱包已连接';
-    connectWalletBtn.disabled = true;
-    showHomePage(userAccount);
-
-    provider.on("block", async()=>{ await updateBalances(); });
-    await updateBalances();
-  }catch(err){console.error(err); alert('钱包连接失败');}
+function showToast(msg, time = 3500) {
+  toast.textContent = msg;
+  toast.classList.remove('hidden');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=> toast.classList.add('hidden'), time);
 }
 
-// 显示主页
-function showHomePage(account){
-  loginPage.classList.add('hidden');
-  homePage.classList.remove('hidden');
-  homeAddressEl.textContent = `钱包地址: ${account}`;
+async function detectProvider() {
+  if (window.ethereum) {
+    ethersProvider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    networkLabel.textContent = "检测钱包...";
+    try {
+      const network = await ethersProvider.getNetwork();
+      networkLabel.textContent = network.name === 'homestead' ? 'Ethereum Mainnet' : network.name;
+    } catch(e){ networkLabel.textContent = '网络未知' }
+  } else {
+    ethersProvider = providerFallback;
+    networkLabel.textContent = '只读模式';
+    showToast('未检测到MetaMask或钱包扩展，使用只读模式。移动端请安装或打开兼容钱包。', 5000);
+  }
 }
 
-// 获取价格
-async function fetchPrices(){
-  try{
-    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd');
-    const data = await res.json();
-    tokenPrices.BNB = data.binancecoin.usd;
-  }catch(err){console.error('获取价格失败', err);}
-}
-
-// 更新余额和价值
-async function updateBalances(){
-  if(!provider || !userAccount) return;
-  await fetchPrices();
-  let totalUSD = 0;
-
-  // BNB
-  const bnbWei = await provider.getBalance(userAccount);
-  const bnb = parseFloat(ethers.utils.formatEther(bnbWei));
-  bnbBalanceEl.textContent = bnb.toFixed(4);
-  const bnbUSD = bnb * tokenPrices.BNB;
-  bnbValueEl.textContent = bnbUSD.toFixed(2);
-  totalUSD += bnbUSD;
-
-  // ERC20
-  for(let token of TOKEN_LIST){
-    const contract = new ethers.Contract(token.address, ERC20_ABI, provider);
-    const balanceRaw = await contract.balanceOf(userAccount);
-    const balance = parseFloat(ethers.utils.formatUnits(balanceRaw, token.decimals));
-    const valueUSD = balance * tokenPrices[token.symbol];
-
-    if(token.symbol==='USDT'){ usdtBalanceEl.textContent=balance.toFixed(4); usdtValueEl.textContent=valueUSD.toFixed(2);}
-    if(token.symbol==='CRC'){ crcBalanceEl.textContent=balance.toFixed(4); crcValueEl.textContent=valueUSD.toFixed(2);}
-    if(token.symbol==='RongChain'){ rongBalanceEl.textContent=balance.toFixed(4); rongValueEl.textContent=valueUSD.toFixed(2);}
-    totalUSD += valueUSD;
+// Connect with MetaMask (or injected wallet)
+async function connectWallet() {
+  if (!window.ethereum) {
+    showToast('未检测到注入钱包（MetaMask）。请安装后重试。');
+    return;
   }
 
-  totalValueEl.textContent = totalUSD.toFixed(2);
+  try {
+    // 请求账户权限
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    ethersProvider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    signer = ethersProvider.getSigner();
+    currentAccount = await signer.getAddress();
+    updateUIConnected(currentAccount);
+    subscribeToEvents();
+    showToast('已连接：' + short(currentAccount));
+  } catch (err) {
+    console.error(err);
+    showToast('连接被拒绝或出错');
+  }
 }
 
-// 退出登录
-function logout(){
-  loginPage.classList.remove('hidden');
-  homePage.classList.add('hidden');
-  connectWalletBtn.disabled = false;
-  connectWalletBtn.textContent = '连接钱包';
-  userAddressEl.textContent='';
-  bnbBalanceEl.textContent='0.0000'; bnbValueEl.textContent='0.00';
-  usdtBalanceEl.textContent='0.0000'; usdtValueEl.textContent='0.00';
-  crcBalanceEl.textContent='0.0000'; crcValueEl.textContent='0.00';
-  rongBalanceEl.textContent='0.0000'; rongValueEl.textContent='0.00';
-  totalValueEl.textContent='0.00';
-  provider.removeAllListeners("block");
+async function disconnect() {
+  // 对于注入式钱包（MetaMask），并没有真正的“断开”API，通常只在前端清理状态
+  signer = null;
+  currentAccount = null;
+  ethersProvider = providerFallback;
+  accountPanel.classList.add('hidden');
+  btnConnect.classList.remove('hidden');
+  btnDisconnect.classList.add('hidden');
+  accountAddr.textContent = '—';
+  accountBal.textContent = '—';
+  networkLabel.textContent = '只读模式';
+  showToast('已断开（仅前端）');
 }
 
-// 按钮动画
-connectWalletBtn.addEventListener('click',()=>{
-  connectWalletBtn.style.transform='scale(0.95)';
-  setTimeout(()=>{connectWalletBtn.style.transform='scale(1)';},100);
-  connectWallet();
-});
-logoutBtn.addEventListener('click',logout);
+function short(addr) {
+  if (!addr) return '—';
+  return addr.slice(0,6) + '…' + addr.slice(-4);
+}
+
+async function updateUIConnected(address) {
+  accountPanel.classList.remove('hidden');
+  btnConnect.classList.add('hidden');
+  btnDisconnect.classList.remove('hidden');
+  accountAddr.textContent = short(address);
+
+  // 获取余额并显示
+  try {
+    const bal = await ethersProvider.getBalance(address);
+    const ether = ethers.utils.formatEther(bal);
+    accountBal.textContent = Number(ether).toFixed(4) + ' ETH';
+  } catch(e){
+    accountBal.textContent = '无法读取';
+  }
+
+  // 网络名
+  try {
+    const net = await ethersProvider.getNetwork();
+    networkLabel.textContent = net.name === 'homestead' ? 'Ethereum Mainnet' : net.name;
+  } catch(e){}
+}
+
+// 监听账户/网络变化
+function subscribeToEvents() {
+  if (!window.ethereum) return;
+  window.ethereum.on('accountsChanged', (accounts) => {
+    if (!accounts || accounts.length === 0) {
+      disconnect();
+    } else {
+      currentAccount = accounts[0];
+      updateUIConnected(currentAccount);
+      showToast('账户已切换：' + short(currentAccount));
+    }
+  });
+
+  window.ethereum.on('chainChanged', (chainId) => {
+    // chainId eg "0x1"
+    window.location.reload();
+  });
+}
+
+// 挂载按钮
+btnConnect.addEventListener('click', connectWallet);
+btnDisconnect.addEventListener('click', disconnect);
+
+// 初始检测
+detectProvider();
+
+// PWA: 注册 service worker（如果支持）
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      await navigator.serviceWorker.register('/sw.js');
+      console.log('ServiceWorker registered');
+    } catch (err) {
+      console.warn('SW 注册失败', err);
+    }
+  });
+}
