@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BSC DApp 钱包</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <!-- 登录页面 -->
+    <div id="loginPage" class="page">
+      <div class="login-card">
+        <h1>欢迎登录 DApp</h1>
+        <p>请使用钱包连接 BSC</p>
+        <button id="connectWalletBtn">连接钱包</button>
+        <p id="userAddress"></p>
+      </div>
+    </div>
+
+    <!-- 用户主页 -->
+    <div id="homePage" class="page hidden">
+      <div class="home-card">
+        <h1>欢迎回来！</h1>
+        <p id="homeAddress"></p>
+
+        <!-- 总资产 -->
+        <div class="total-assets">
+          总资产: $<span id="totalValue">0.00</span>
+        </div>
+
+        <!-- 币种列表 -->
+        <div class="token-list">
+          <div class="token-item" id="bnbItem">
+            <div class="token-header">
+              <span>BNB</span>
+              <span id="bnbBalance">0.0000</span>
+            </div>
+            <div class="token-value">价值: $<span id="bnbValue">0.00</span></div>
+          </div>
+
+          <div class="token-item" id="usdtItem">
+            <div class="token-header">
+              <span>USDT</span>
+              <span id="usdtBalance">0.0000</span>
+            </div>
+            <div class="token-value">价值: $<span id="usdtValue">0.00</span></div>
+          </div>
+
+          <div class="token-item" id="crcItem">
+            <div class="token-header">
+              <span>CRC</span>
+              <span id="crcBalance">0.0000</span>
+            </div>
+            <div class="token-value">价值: $<span id="crcValue">0.00</span></div>
+          </div>
+
+          <div class="token-item" id="rongItem">
+            <div class="token-header">
+              <span>RongChain</span>
+              <span id="rongBalance">0.0000</span>
+            </div>
+            <div class="token-value">价值: $<span id="rongValue">0.00</span></div>
+          </div>
+        </div>
+
+        <button id="logoutBtn">退出登录</button>
+      </div>
+    </div>
+
+    <div class="wave"></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
