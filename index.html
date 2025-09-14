@@ -1,54 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>BSC 钱包调试版</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- ethers.js -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220"/>
+  <title>DApp Connect — Wallet 登录</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Google Fonts (可删) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/style.css" />
+  <!-- ethers.js 用于与钱包/链交互 -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </head>
 <body>
-  <h1>BSC 钱包调试</h1>
-  <button id="connectBtn">连接钱包</button>
-  <p id="status">未连接</p>
-  <p id="network">网络: 未检测</p>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div class="topbar-left">DApp</div>
+      <div class="topbar-right" id="network">—</div>
+    </header>
 
-  <script>
-    const connectBtn = document.getElementById('connectBtn');
-    const status = document.getElementById('status');
-    const networkEl = document.getElementById('network');
+    <main class="content">
+      <section class="hero">
+        <h1>欢迎使用 DApp</h1>
+        <p class="muted">像 APP 一样的登录体验 — 直接连接你的钱包</p>
 
-    async function connectWallet() {
-      if (!window.ethereum) {
-        status.textContent = '❌ 请安装 MetaMask';
-        return;
-      }
+        <div class="wallet-card">
+          <div class="wallet-info">
+            <img src="https://raw.githubusercontent.com/ethereum/wiki/master/media/eth-logo.png" alt="eth" class="logo">
+            <div>
+              <div class="title">以太坊钱包</div>
+              <div class="muted small">安全连接 · 可在移动或桌面使用</div>
+            </div>
+          </div>
 
-      try {
-        // 请求账户
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        const account = accounts[0];
-        status.textContent = '✅ 已连接: ' + account;
+          <div class="actions">
+            <button id="btnConnect" class="btn primary">连接钱包</button>
+            <button id="btnDisconnect" class="btn ghost hidden">断开连接</button>
+          </div>
+        </div>
 
-        // 创建 provider
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const network = await provider.getNetwork();
+        <div id="accountPanel" class="account-panel hidden">
+          <div class="acct-row">
+            <div>地址</div>
+            <div id="accountAddr" class="mono">—</div>
+          </div>
+          <div class="acct-row">
+            <div>余额</div>
+            <div id="accountBal">—</div>
+          </div>
+        </div>
+      </section>
+    </main>
 
-        if (network.chainId === 56) {
-          networkEl.textContent = '🌐 当前网络: BSC 主网';
-        } else if (network.chainId === 97) {
-          networkEl.textContent = '🌐 当前网络: BSC 测试网';
-        } else {
-          networkEl.textContent = '⚠️ 当前不是 BSC 网络 (chainId: ' + network.chainId + ')';
-        }
+    <nav class="bottom-nav">
+      <button class="nav-btn active">登录</button>
+      <button class="nav-btn">市场</button>
+      <button class="nav-btn">我的</button>
+    </nav>
 
-      } catch (err) {
-        console.error(err);
-        status.textContent = '❌ 连接失败: ' + err.message;
-      }
-    }
+    <!-- Simple modal for status / errors -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
 
-    connectBtn.addEventListener('click', connectWallet);
-  </script>
+  <script src="/app.js"></script>
 </body>
 </html>
