@@ -1,36 +1,81 @@
-/* 基础重置 */
-* { margin:0; padding:0; box-sizing:border-box; }
-body, html { width:100%; height:100%; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#667eea,#764ba2); display:flex; justify-content:center; align-items:center; overflow:hidden; }
-
-.app { position: relative; width: 100%; max-width: 400px; padding: 20px; }
-
-.page { display:flex; justify-content:center; align-items:center; height:100%; width:100%; transition: all 0.5s ease; }
-.hidden { display:none; }
-
-.login-card, .home-card {
-  background:#fff; border-radius:25px; padding:1.5rem; box-shadow:0 10px 25px rgba(0,0,0,0.2); animation: slideUp 0.5s ease-out; width:100%;
+:root{
+  --bg:#0b1220;
+  --card:#0f1724;
+  --muted:#9aa6b2;
+  --accent:#4f7cff;
+  --glass: rgba(255,255,255,0.03);
+  --text:#e6eef6;
+  font-family: "Inter", system-ui, -apple-system, "Helvetica Neue", "Segoe UI", Roboto, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
 
-.login-card h1, .home-card h1 { text-align:center; font-size:1.8rem; margin-bottom:0.5rem; }
-.login-card p, .home-card p { text-align:center; margin-bottom:1rem; color:#555; }
-
-button {
-  padding:0.8rem 1.5rem; font-size:1.1rem; border:none; border-radius:15px; background-color:#667eea; color:#fff; cursor:pointer; transition: all 0.3s ease;
+*{box-sizing:border-box}
+html,body,#app{height:100%}
+body{
+  margin:0;
+  background: linear-gradient(180deg,#07101a 0%,#0b1220 100%);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
-button:hover { background-color:#5a67d8; transform: translateY(-2px); }
 
-.total-assets { font-size:1.3rem; font-weight:bold; margin:1rem 0; text-align:center; }
+.app-shell{display:flex;flex-direction:column;min-height:100vh}
 
-.token-list { display:flex; flex-direction:column; gap:0.8rem; }
+/* Topbar */
+.topbar{
+  height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  border-bottom:1px solid rgba(255,255,255,0.02);
+}
+.topbar .topbar-left{font-weight:700}
+.topbar .topbar-right{font-size:13px;color:var(--muted)}
 
-.token-item { background:#f7f7f7; border-radius:15px; padding:0.8rem 1rem; cursor:pointer; transition: all 0.3s ease; }
-.token-item:hover { background:#e3e3e3; transform: translateY(-2px); }
-.token-header { display:flex; justify-content:space-between; font-weight:600; }
-.token-value { font-size:0.9rem; color:#555; margin-top:0.3rem; }
+/* Content */
+.content{flex:1; padding:20px 16px 80px;}
+.hero{max-width:520px;margin:24px auto}
+.hero h1{margin:0 0 6px;font-size:28px}
+.hero .muted{color:var(--muted);margin-bottom:16px}
 
-.wave { position:absolute; bottom:0; width:200%; height:200px; background: rgba(255,255,255,0.1); border-radius:50%; animation: waveMove 6s linear infinite; z-index:0; left:-50%; }
+.wallet-card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.03);
+}
+.wallet-info{display:flex;gap:12px;align-items:center}
+.logo{width:44px;height:44px;border-radius:10px}
+.title{font-weight:600}
+.small{font-size:13px}
+.actions{display:flex;gap:8px}
+.btn{padding:10px 14px;border-radius:10px;font-weight:600;border:0;cursor:pointer}
+.btn.primary{background:var(--accent);color:white}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.04)}
+.hidden{display:none}
 
-@keyframes waveMove { 0%{transform:translateX(0);} 50%{transform:translateX(25%);} 100%{transform:translateX(0);} }
-@keyframes slideUp { from{transform:translateY(50px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+/* account panel */
+.account-panel{margin-top:16px;background:var(--glass);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+.acct-row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(255,255,255,0.01)}
+.acct-row:first-child{border-top:0}
+.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;font-size:13px;color:#cfe0ff}
 
-@media(max-width:500px){ .login-card, .home-card{padding:1.2rem;} button{width:100%;} }
+/* bottom nav */
+.bottom-nav{
+  position:fixed;left:12px;right:12px;bottom:12px;height:60px;border-radius:16px;
+  display:flex;align-items:center;justify-content:space-around;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.03);backdrop-filter: blur(6px);
+  box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+}
+.nav-btn{background:transparent;border:0;color:var(--muted);font-weight:700;cursor:pointer}
+.nav-btn.active{color:var(--accent)}
+
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;padding:10px 14px;border-radius:10px;background:rgba(0,0,0,0.6);color:white}
+.toast.hidden{display:none}
+
+/* responsive */
+@media(min-width:720px){
+  .content{padding:40px}
+  .bottom-nav{display:none}
+}
