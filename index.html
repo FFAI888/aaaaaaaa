@@ -2,19 +2,21 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>钱包调试版</title>
+  <title>BSC 钱包调试版</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- ethers.js -->
   <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
 </head>
 <body>
-  <h1>最小化钱包调试</h1>
+  <h1>BSC 钱包调试</h1>
   <button id="connectBtn">连接钱包</button>
   <p id="status">未连接</p>
+  <p id="network">网络: 未检测</p>
 
   <script>
     const connectBtn = document.getElementById('connectBtn');
     const status = document.getElementById('status');
+    const networkEl = document.getElementById('network');
 
     async function connectWallet() {
       if (!window.ethereum) {
@@ -27,6 +29,19 @@
         const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
         const account = accounts[0];
         status.textContent = '✅ 已连接: ' + account;
+
+        // 创建 provider
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const network = await provider.getNetwork();
+
+        if (network.chainId === 56) {
+          networkEl.textContent = '🌐 当前网络: BSC 主网';
+        } else if (network.chainId === 97) {
+          networkEl.textContent = '🌐 当前网络: BSC 测试网';
+        } else {
+          networkEl.textContent = '⚠️ 当前不是 BSC 网络 (chainId: ' + network.chainId + ')';
+        }
+
       } catch (err) {
         console.error(err);
         status.textContent = '❌ 连接失败: ' + err.message;
